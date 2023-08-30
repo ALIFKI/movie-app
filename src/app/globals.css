@@ -6,6 +6,15 @@
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
+  --primary : #5A4AF4;
+  --secondary : #1EA5FC;
+  --tertary : #B66DFF;
+  --success : #05CE91;
+  --error : #FF6161;
+  --warning : #FFAD49;
+  --black : #000000;
+  --white : #FFFFFF;
+  --grey : #121829;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -16,12 +25,11 @@
   }
 }
 
+.poppins-font {
+  font-family: var(--poppins-font);
+}
+
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background-color: var(--grey);
 }
