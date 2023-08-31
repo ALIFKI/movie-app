@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic'
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSearchParams } from 'next/navigation'
+import Loading from '@/app/components/Loading';
 
 const NavBar = dynamic(()=> import('../../components/navbar'))
 const MovieCard = dynamic(()=>import('../../components/card'))
@@ -18,6 +19,10 @@ export default function SearchPage() {
   const [nextPage,setNextPage] =  useState<number>(1)
   const [search,setSearch] = useState<string | null>(null)
   const [loading,setLoading] = useState<Boolean>(false)
+
+  const cardClick = (id:any)=>()=>{
+    router.push('/pages/detail/'+id)
+  }
 
   const loadData = async (search? : string)=>{
     setLoading(true)
@@ -87,6 +92,9 @@ export default function SearchPage() {
 
   return (
     <>
+      <div className="flex fixed inset-0 z-[999] bg-[rgba(0,0,0,0.8)] overflow-hidden justify-center items-center">
+        <Loading isLoading></Loading>
+      </div>
       <NavBar></NavBar>
       <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
       <div className="relative isolate pt-14">
@@ -139,6 +147,7 @@ export default function SearchPage() {
                   image={movie.poster_path} 
                   title={movie.original_title}
                   rating={movie.vote_average}
+                  onClick={cardClick(movie.id)}
                 ></MovieCard>
               )
             })
