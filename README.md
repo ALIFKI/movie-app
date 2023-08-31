@@ -10,9 +10,9 @@ Welcome to **Movie App Project**! This project is an example implementation of a
 
 ### Installation
 
-1.Clone the repository:
-2.Add the env and key credential to the project (env.local.example -> rename to env.local)
-3.run the command on the terminal
+- Clone the repository:
+- Add the env and key credential to the project (env.local.example -> rename to env.local)
+- run the command on the terminal
 
 ```bash
 npm run dev
