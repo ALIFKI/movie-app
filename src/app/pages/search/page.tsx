@@ -1,53 +1,29 @@
 'use client'
-import localFont from 'next/font/local'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
-import Card from './components/card'
 import React, { useState, useEffect } from 'react';
-import { config } from './config/config'
 import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation'
 
-const PoppinsFont = localFont({
-  src : [
-    {
-      path : './assets/fonts/Poppins-Regular.ttf',
-      style : 'normal',
-      weight : '300'
-    },
-    {
-      path : './assets/fonts/Poppins-SemiBold.ttf',
-      style : 'normal',
-      weight : '500'
-    },
-    {
-      path : './assets/fonts/Poppins-Bold.ttf',
-      style : 'normal',
-      weight : '900'
-    }
-  ]
-})
-
-const NavBar = dynamic(()=> import('./components/navbar'))
-const MovieCard = dynamic(()=>import('./components/card'))
-export default function HomePage() {
-  const route = useRouter();
+const NavBar = dynamic(()=> import('../../components/navbar'))
+const MovieCard = dynamic(()=>import('../../components/card'))
+export default function SearchPage() {
   const [movies, setMovies] = useState<MovieList>({
     results : []
   });
+
+  const router = useRouter();
+  const params = useSearchParams();
 
   const [nextPage,setNextPage] =  useState<number>(1)
   const [search,setSearch] = useState<string | null>(null)
   const [loading,setLoading] = useState<Boolean>(false)
 
-  const getData = async (search? : string)=>{
+  const loadData = async (search? : string)=>{
     setLoading(true)
+    const searchParams = params.get('search')
     try {
-      let response = null;
-      if(search !== null){
-        response = await fetch(`/api/3/movie/top_rated?api_key=d212dc1bfc2d8009f736f68f2e71938f&page=${nextPage}`);
-      }else{
-        response = await fetch(`/api/3/search/movie?query=Jack+Reacher&api_key=d212dc1bfc2d8009f736f68f2e71938f&page=${nextPage}`);
-      }
+      const  response = await fetch(`/api/3/search/movie?query=${searchParams}&api_key=d212dc1bfc2d8009f736f68f2e71938f&page=${nextPage}`);
       const jsonData = await response.json();
       setMovies({
         ...movies,
@@ -66,12 +42,12 @@ export default function HomePage() {
         window.innerHeight + window.scrollY >= document.body.offsetHeight - 200 &&
         !loading
       ) {
-        getData();
+        loadData();
       }
     };
 
     useEffect(() => {
-      getData()
+      loadData()
       return () => {
         
       }
@@ -83,23 +59,34 @@ export default function HomePage() {
         window.removeEventListener('scroll', handleScroll);
       }
     },[loading])
+    
+  const searchData = async ()=>{
+    setLoading(true)
+    const searchParams = params.get('search')
+    try {
+      const  response = await fetch(`/api/3/search/movie?query=${search}&api_key=d212dc1bfc2d8009f736f68f2e71938f&page=${nextPage}`);
+      const jsonData = await response.json();
+      console.log(jsonData)
+      setMovies(jsonData)
+      setNextPage(nextPage + 1)
+      setLoading(false)
+    } catch (error) {
+      console.log(`Error fetching data: ${error}`)
+      setLoading(false)
+    }
+  }
+  const handleInputChange = (event : React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(event.target.value)
+  };
 
-    useEffect(()=>{
-      getData();
-    },[search])
-
-  const cardClick = (id:any)=>()=>{
-    route.push('/pages/detail/'+id)
+  const handleSearch = ()=>{
+    router.push(`/pages/search?search=${search}`);
+    searchData()
   }
   
 
   return (
     <>
-      <style jsx global>{`
-        :root {
-          --poppins-font: ${PoppinsFont.style.fontFamily};
-        }
-      `}</style>
       <NavBar></NavBar>
       <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
       <div className="relative isolate pt-14">
@@ -110,25 +97,28 @@ export default function HomePage() {
           <div className="hidden sm:mb-8 sm:flex sm:justify-center">
           </div>
           <div className="text-left">
-            <h1 className="text-xl poppins-font font-bold text-white sm:text-5xl">Movie Video</h1>
+            <h1 className="text-xl poppins-font font-bold text-white sm:text-5xl">Search Movie</h1>
             <p className="mt-6 leading-1 text-[#8E95A9] poppins-font font-thin text-[12px]">
               List of movies and TV Shows, I, Pramod Poudel have watched till date. Explore what I have watched and also feel free to make a suggestion. 😉
             </p>
           </div>
-          <div className="bg-[rgba(18,24,41,0.7)] h-14 w-[330px] my-7 rounded-md flex justify-start items-center p-4 backdrop-blur-md">
-            <span>
-              <Image src={"/assets/images/search.svg"} width={20} height={20} alt='search image'></Image>
-            </span>
-            <input 
-              type="text" 
-              name="search" 
-              id="search" 
-              className='bg-[rgba(18,24,41,0)] h-10 w-full mx-5 poppins-font font-thin text-[12px] text-[#475069] outline-none placeholder-[#475069] focus:outline-none' 
-              placeholder='Search some awsome movie'
-              onFocus={()=>{
-                route.push('/pages/search')
-              }}
-              ></input>
+          <div className="flex justify-start items-center">
+            <div className="bg-[rgba(18,24,41,0.7)] h-14 w-[330px] my-7 rounded-md flex justify-start items-center p-4 backdrop-blur-md">
+              <span>
+                <Image src={"/assets/images/search.svg"} width={20} height={20} alt='search image'></Image>
+              </span>
+              <input 
+                type="text" 
+                name="search" 
+                id="search" 
+                className='bg-[rgba(18,24,41,0)] h-10 w-full mx-5 poppins-font font-thin text-[12px] text-[#475069] outline-none placeholder-[#475069] focus:outline-none' 
+                placeholder='Search some awsome movie'
+                onChange={handleInputChange}
+                ></input>
+            </div>
+            <button onClick={handleSearch} className="relative flex h-14 w-[121px] bg-[var(--primary)] ml-6 rounded-md hover:bg-[#362C92]">
+              <span className='m-auto'>Search</span>
+            </button>
           </div>
         </div>
         <div className="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]" aria-hidden="true">
@@ -149,7 +139,6 @@ export default function HomePage() {
                   image={movie.poster_path} 
                   title={movie.original_title}
                   rating={movie.vote_average}
-                  onClick={cardClick(movie.id as number)}
                 ></MovieCard>
               )
             })

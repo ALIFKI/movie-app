@@ -1,16 +1,17 @@
 'use client'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 
 export default function NavbarComponents(){
+
+  const router = useRouter();
 
   return (
     <nav className="bg-gray[var(--gray)] top-0 w-full absolute z-[100]">
       <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
         <div className="relative flex h-16 items-center justify-between">
-          <div className="absolute -inset-0">
-          </div>
-          <div className="flex flex-1 items-center justify-between sm:items-stretch sm:justify-between">
-            <div className="flex flex-shrink-0 items-center">
+          <div className="flex flex-1 items-center justify-between sm:items-stretch sm:justify-between cursor-pointer">
+            <div className="flex flex-shrink-0 items-center" onClick={()=> router.push('/')}>
               <Image
                 src="/assets/images/logo.png"
                 width={500}
@@ -18,6 +19,7 @@ export default function NavbarComponents(){
                 className="h-8 w-auto"
                 alt="Picture of the author"
               />
+              <span className='text-lg font-bold'>Movie</span>
               {/* <img className="h-8 w-auto" src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500" alt="Your Company"> */}
             </div>
             <div className="hidden sm:ml-6 sm:block">
