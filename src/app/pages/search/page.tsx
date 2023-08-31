@@ -10,36 +10,57 @@ const NavBar = dynamic(()=> import('../../components/navbar'))
 const MovieCard = dynamic(()=>import('../../components/card'))
 export default function SearchPage() {
   const [movies, setMovies] = useState<MovieList>({
-    results : []
+    results : [],
+    total_pages : 0
   });
 
   const router = useRouter();
   const params = useSearchParams();
 
   const [nextPage,setNextPage] =  useState<number>(1)
-  const [search,setSearch] = useState<string | null>(null)
+  const [search,setSearch] = useState<string | null>('')
   const [loading,setLoading] = useState<Boolean>(false)
+
+  const [yearList,setYearList] = useState<number[]>([]);
+  const [yearSelected,selectYear] = useState(2020);
 
   const cardClick = (id:any)=>()=>{
     router.push('/pages/detail/'+id)
   }
 
-  const loadData = async (search? : string)=>{
-    setLoading(true)
-    const searchParams = params.get('search')
+  const loadData = async ()=>{
     try {
-      const  response = await fetch(`/api/3/search/movie?query=${searchParams}&api_key=d212dc1bfc2d8009f736f68f2e71938f&page=${nextPage}`);
+      const  response = await fetch(`/api/3/search/movie?query=${search}&api_key=d212dc1bfc2d8009f736f68f2e71938f&page=${nextPage}&primary_release_year=${yearSelected}`);
       const jsonData = await response.json();
-      setMovies({
-        ...movies,
-        results: [...movies?.results as Array<any>,...jsonData['results']],
-      })
-      setNextPage(nextPage + 1)
+      if(nextPage < jsonData?.total_pages){
+        setLoading(true)
+        console.log(jsonData)
+        var responseData = {
+          ...movies,
+          results: [...movies?.results as Array<any>,...jsonData['results']],
+        }
+        setMovies({...responseData})
+        setNextPage(nextPage + 1)
+      }
       setLoading(false)
     } catch (error) {
       console.log(`Error fetching data: ${error}`)
       setLoading(false)
     }
+  }
+
+  const groupYearList = async ()=>{
+    let listYear: number[] = [];
+    // listYear = Array.from(new Set(list.map(movie => new Date(movie.release_date).getFullYear())));
+    for (let year = 1950; year <= 2023; year++) {
+      listYear.push(year);
+    }
+
+    setYearList(listYear.sort())
+  }
+
+  const handleResetPage = ()=>{
+    setNextPage(1);
   }
 
   const handleScroll = () => {
@@ -52,7 +73,8 @@ export default function SearchPage() {
     };
 
     useEffect(() => {
-      loadData()
+      // loadData()
+      groupYearList()
       return () => {
         
       }
@@ -63,17 +85,16 @@ export default function SearchPage() {
       return ()=>{
         window.removeEventListener('scroll', handleScroll);
       }
-    },[loading])
+    },[])
     
-  const searchData = async ()=>{
+  const searchData = async (year?: number)=>{
     setLoading(true)
     const searchParams = params.get('search')
     try {
-      const  response = await fetch(`/api/3/search/movie?query=${search}&api_key=d212dc1bfc2d8009f736f68f2e71938f&page=${nextPage}`);
+      const  response = await fetch(`/api/3/search/movie?query=${search}&api_key=d212dc1bfc2d8009f736f68f2e71938f&primary_release_year=${year}&page=1`);
       const jsonData = await response.json();
-      console.log(jsonData)
-      setMovies(jsonData)
-      setNextPage(nextPage + 1)
+      setMovies({...jsonData})
+      setNextPage(jsonData.page + 1)
       setLoading(false)
     } catch (error) {
       console.log(`Error fetching data: ${error}`)
@@ -85,16 +106,35 @@ export default function SearchPage() {
   };
 
   const handleSearch = ()=>{
-    router.push(`/pages/search?search=${search}`);
-    searchData()
+    handleResetPage();
+    const page = params.get('page') ?? 1
+    // router.push(`/pages/search?search=${search}&primary_release_year=${yearSelected}&page=${page}`);
+    searchData(yearSelected)
   }
-  
+
+  const handleSelectYear = (event : any)=> {
+    const { target } = event;
+    const year = target.value;
+    selectYear(year)
+    filterYear(year)
+    handleResetPage();
+  }
+
+  const filterYear = async (year: number)=>{
+    const searchParam = params.get('search') ?? ''
+    // router.push(`/pages/search?search=${search}&primary_release_year=${year}&page=1`);
+    searchData(year)
+  }
 
   return (
     <>
-      <div className="flex fixed inset-0 z-[999] bg-[rgba(0,0,0,0.8)] overflow-hidden justify-center items-center">
-        <Loading isLoading></Loading>
-      </div>
+      {
+        loading ? (
+          <div className="flex fixed inset-0 z-[999] bg-[rgba(0,0,0,0.8)] overflow-hidden justify-center items-center">
+            <Loading isLoading></Loading>
+          </div>
+        ) : null
+      }
       <NavBar></NavBar>
       <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
       <div className="relative isolate pt-14">
@@ -134,8 +174,20 @@ export default function SearchPage() {
         </div>
       </div>
       </div>
-      <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8 my-4">
+      <div className="relative z-10 mx-auto max-w-7xl px-2 sm:px-6 lg:px-8 my-4 flex flex-row justify-between">
         <h1 className='text-normal poppins-font lg:text-[32px] text-[#767E94]'>All ({movies.results?.length})</h1>
+        <select 
+          className="text-[#767E94] bg-[rgba(0,0,0,0)] h-[50px] ml-6 block p-2 border rounded-md shadow-sm focus:ring focus:ring-opacity-50 focus:border-blue-500 border-none outline-none"
+          onChange={handleSelectYear}
+          value={yearSelected}
+          >
+          <option disabled>Year</option>
+          {
+            yearList.map((year,index)=>{
+              return (<option key={index} value={year}>{year}</option>)
+            })
+          }
+        </select>
       </div>
       <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

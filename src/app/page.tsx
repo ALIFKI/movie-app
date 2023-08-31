@@ -6,6 +6,7 @@ import Card from './components/card'
 import React, { useState, useEffect } from 'react';
 import { config } from './config/config'
 import { useRouter } from 'next/navigation';
+import Loading from './components/Loading'
 
 const PoppinsFont = localFont({
   src : [
@@ -54,7 +55,9 @@ export default function HomePage() {
         results: [...movies?.results as Array<any>,...jsonData['results']],
       })
       setNextPage(nextPage + 1)
-      setLoading(false)
+      setTimeout(() => {
+        setLoading(false)
+      }, 1000);
     } catch (error) {
       console.log(`Error fetching data: ${error}`)
       setLoading(false)
@@ -100,6 +103,13 @@ export default function HomePage() {
           --poppins-font: ${PoppinsFont.style.fontFamily};
         }
       `}</style>
+      {
+        loading ? (
+          <div className="flex fixed inset-0 z-[999] bg-[rgba(0,0,0,0.8)] overflow-hidden justify-center items-center">
+            <Loading isLoading></Loading>
+          </div>
+        ) : null
+      }
       <NavBar></NavBar>
       <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
       <div className="relative isolate pt-14">
