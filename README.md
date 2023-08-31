@@ -1,6 +1,18 @@
+# My Next.js Project
+
+Welcome to **Movie App Project**! This project is an example implementation of a web application built using Next.js.
+
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js (v16)
+
+### Installation
+
+1.Clone the repository:
+2.Add the env and key credential to the project (env.local.example -> rename to env.local)
+3.run the command on the terminal
 
 ```bash
 npm run dev
